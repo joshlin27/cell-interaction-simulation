@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open index.html",
-            "file": "/Users/bricepatchou/Documents/GitHub/cell-interaction-simulation/index.html"
+            "file": "/Users/bricepatchou/Documents/GitHub/cell-interaction-simulation/index-2.html"
         }
     ]
 }
