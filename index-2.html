@@ -1,659 +1,1081 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cell Interaction Simulator</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #fafafa; --surface: #ffffff; --border: #e0e0e0; --border-light: #efefef;
-    --text: #1a1a1a; --text-muted: #6b7280; --text-subtle: #9ca3af;
-    --teal: #3ca683; --teal-dark: #2d8a6a;
-    --radius: 8px; --radius-sm: 5px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  }
-  html, body { height: 100%; font-family: 'DM Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
-  .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turing Pattern Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ───────────────────────────────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  /* Header */
-  .header { display: flex; align-items: center; justify-content: space-between; padding: 0 20px; height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; box-shadow: var(--shadow); z-index: 10; }
-  .header-left { display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width: 28px; height: 28px; background: var(--teal); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .header-title { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
-  .header-right { display: flex; align-items: center; gap: 8px; }
-  .btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 13px; border-radius: var(--radius-sm); font-size: 12.5px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: var(--surface); color: var(--text); height: 32px; }
-  .btn:hover { background: #f5f5f5; border-color: #d0d0d0; }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary { background: var(--teal); color: white; border-color: var(--teal); }
-  .btn-primary:hover { background: var(--teal-dark); border-color: var(--teal-dark); }
-  .time-badge { display: flex; align-items: center; gap: 6px; padding: 4px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); height: 32px; font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-muted); }
-  .time-value { color: var(--teal); font-weight: 500; min-width: 36px; }
-  .divider-v { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', 'Helvetica Neue', -apple-system, system-ui, sans-serif;
+      font-size: 13px;
+      color: #111;
+      background: #fff;
+      overflow: hidden;
+    }
 
-  /* Layout */
-  .main { display: flex; flex: 1; overflow: hidden; }
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  /* Sidebar */
-  .sidebar { width: 256px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
-  .sidebar::-webkit-scrollbar { width: 4px; }
-  .sidebar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 2px; }
-  .panel-tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 4px; flex-shrink: 0; }
-  .tab { flex: 1; padding: 10px 8px; text-align: center; font-size: 12.5px; font-weight: 500; color: var(--text-subtle); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s; }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
-  .sidebar-content { padding: 16px; flex: 1; }
-  .section { margin-bottom: 20px; }
-  .section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 10px; }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-  /* Equation box */
-  .eq-box { background: #f7fffe; border: 1px solid #c8e8de; border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; font-family: 'DM Mono', monospace; font-size: 11px; color: #1e5c42; line-height: 1.9; }
-  .va { color: #2563eb; font-weight: 600; }
-  .vi { color: #dc2626; font-weight: 600; }
-  .vk { color: #7c3aed; font-weight: 600; }
+    ::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 2px;
+    }
 
-  /* Legend */
-  .legend-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-subtle); font-family: 'DM Mono', monospace; margin-bottom: 4px; }
-  .legend-row { border: 1px solid var(--border-light); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+    /* ── Layout ─────────────────────────────────────────────────────────────── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-  /* Params */
-  .param-row { margin-bottom: 13px; }
-  .param-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-  .param-name { font-size: 12px; font-weight: 500; color: var(--text); }
-  .param-val { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); font-weight: 500; }
-  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
-  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--teal); cursor: pointer; box-shadow: 0 0 0 3px rgba(60,166,131,0.2); }
-  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--teal); cursor: pointer; border: none; }
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      height: 50px;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      gap: 8px;
+    }
 
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .stat-card { background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 8px 9px; }
-  .stat-label { font-size: 10px; color: var(--text-subtle); margin-bottom: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.03em; }
-  .stat-value { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text); font-weight: 500; }
+    .h-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+    }
 
-  .btn-full { width: 100%; justify-content: center; margin-top: 4px; }
+    .h-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 0 12px;
+    }
 
-  /* Canvas */
-  .canvas-area { flex: 1; position: relative; background: var(--bg); overflow: hidden; }
-  #simCanvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; }
-  #simCanvas.panning { cursor: grabbing; }
-  .canvas-overlay { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; z-index: 5; }
-  .overlay-badge { background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 10px; font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; box-shadow: var(--shadow); }
-  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--text-subtle); margin-right: 5px; vertical-align: middle; transition: background 0.3s; }
-  .status-dot.running { background: var(--teal); animation: pulse 1.5s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{box-shadow:0 0 0 2px rgba(60,166,131,0.3)}50%{box-shadow:0 0 0 5px rgba(60,166,131,0.1)} }
-</style>
+    .h-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+
+    .app-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+      letter-spacing: -0.3px;
+      margin-right: 3px;
+      white-space: nowrap;
+    }
+
+    .h-icon-row {
+      display: flex;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #6b7280;
+      padding: 0;
+      flex-shrink: 0;
+      transition: filter 0.12s;
+    }
+
+    .icon-btn:hover:not(:disabled) {
+      filter: brightness(0.94);
+      background: #f9fafb;
+    }
+
+    .icon-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .proj-input {
+      font-size: 13px;
+      color: #374151;
+      background: transparent;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 5px 14px;
+      text-align: center;
+      outline: none;
+      width: 200px;
+      font-family: inherit;
+      cursor: text;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+
+    .proj-input:focus {
+      border-color: #3ca683;
+      box-shadow: 0 0 0 2px rgba(60, 166, 131, 0.12);
+    }
+
+    .run-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 16px;
+      height: 34px;
+      background: #3ca683;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      margin-left: 4px;
+      letter-spacing: -0.1px;
+      transition: filter 0.12s, box-shadow 0.12s;
+      box-shadow: 0 1px 3px rgba(60, 166, 131, 0.25);
+    }
+
+    .run-btn:hover {
+      filter: brightness(1.07);
+      box-shadow: 0 2px 8px rgba(60, 166, 131, 0.35);
+    }
+
+    .run-btn:active {
+      filter: brightness(0.95);
+    }
+
+    .time-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 10px;
+      height: 30px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      margin-left: 2px;
+    }
+
+    .time-badge-val {
+      font-size: 12px;
+      font-weight: 600;
+      color: #111;
+      font-family: 'IBM Plex Mono', monospace;
+      min-width: 40px;
+    }
+
+    /* ── Body ───────────────────────────────────────────────────────────────── */
+    .body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────────────────────── */
+    aside {
+      width: 270px;
+      background: #fff;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+
+    .tab-btn {
+      position: relative;
+      flex: 1;
+      padding: 11px 6px 9px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: center;
+      transition: color 0.12s;
+    }
+
+    .tab-btn:hover {
+      color: #374151;
+    }
+
+    .tab-btn.active {
+      color: #111;
+      font-weight: 600;
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      background: #3ca683;
+      border-radius: 2px;
+    }
+
+    .sidebar-scroll {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .section-head {
+      padding: 12px 16px 7px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #111;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    /* ── Param rows ─────────────────────────────────────────────────────────── */
+    .param-item {
+      padding: 8px 16px 7px;
+      border-bottom: 1px solid #f9fafb;
+    }
+
+    .param-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .param-sym {
+      font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 500;
+      color: #3ca683;
+      min-width: 24px;
+    }
+
+    .param-lbl {
+      flex: 1;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .param-val {
+      font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      color: #111;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* ── Sliders ────────────────────────────────────────────────────────────── */
+    input[type=range].slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 3px;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+      background: linear-gradient(to right,
+          #3ca683 var(--pct, 50%),
+          #e5e7eb var(--pct, 50%));
+    }
+
+    input[type=range].slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px;
+      height: 13px;
+      background: #fff;
+      border-radius: 50%;
+      border: 2px solid #3ca683;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    input[type=range].slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    input[type=range].slider::-moz-range-thumb {
+      width: 13px;
+      height: 13px;
+      background: #fff;
+      border: 2px solid #3ca683;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 0 0 2px #3ca683;
+    }
+
+    /* ── Legend ─────────────────────────────────────────────────────────────── */
+    .legend-wrap {
+      padding: 10px 16px 14px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .legend-bar {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to right, #3b82f6, #ef4444);
+      border: 1px solid #e5e7eb;
+    }
+
+    .legend-lbls {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 4px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    .legend-colors {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-top: 7px;
+      font-weight: 600;
+    }
+
+    .lc-blue {
+      color: #3b82f6;
+    }
+
+    .lc-red {
+      color: #ef4444;
+    }
+
+    /* ── Equations ──────────────────────────────────────────────────────────── */
+    .eq-card {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 8px 16px;
+      border-bottom: 1px solid #f9fafb;
+    }
+
+    .eq-lbl {
+      font-size: 10px;
+      color: #9ca3af;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .eq-val {
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      line-height: 1.65;
+      word-break: break-word;
+      color: #374151;
+    }
+
+    .eq-val.accent {
+      color: #3ca683;
+      font-weight: 500;
+    }
+
+    .eq-val.dim {
+      color: #c5cad0;
+    }
+
+    /* ── Info rows ──────────────────────────────────────────────────────────── */
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      border-bottom: 1px solid #f9fafb;
+    }
+
+    .info-lbl {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .info-val {
+      font-size: 12px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .info-val.accent {
+      color: #3ca683;
+    }
+
+    /* ── Canvas area ────────────────────────────────────────────────────────── */
+    main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #f3f4f6;
+      background-image: radial-gradient(circle, #c5cad2 1px, transparent 1px);
+      background-size: 20px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+
+    #sim-canvas {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 52px);
+    }
+
+    /* ── Start overlay ──────────────────────────────────────────────────────── */
+    #start-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(6px);
+      z-index: 10;
+    }
+
+    .overlay-card {
+      text-align: center;
+      padding: 32px 42px;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .overlay-hex {
+      font-size: 42px;
+      color: #3ca683;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .overlay-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .overlay-sub {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 20px;
+    }
+
+    /* ── Zoom panel ─────────────────────────────────────────────────────────── */
+    .zoom-panel {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .zoom-btn {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      font-size: 16px;
+      font-family: inherit;
+      padding: 0;
+      transition: background 0.1s;
+    }
+
+    .zoom-btn:hover {
+      background: #f9fafb;
+    }
+
+    .zoom-divider {
+      height: 1px;
+      background: #f3f4f6;
+    }
+  </style>
 </head>
+
 <body>
-<div class="app">
-  <header class="header">
-    <div class="header-left">
-      <div class="logo-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="12,2 22,8 22,16 12,22 2,16 2,8"/><polygon points="12,7 17,10 17,14 12,17 7,14 7,10" stroke-opacity="0.6"/></svg>
-      </div>
-      <span class="header-title">Cell Interaction Simulator</span>
-    </div>
-    <div class="header-right">
-      <div class="time-badge">
-        <span class="status-dot" id="statusDot"></span>
-        Time:&nbsp;<span class="time-value" id="timeDisplay">0.0</span>
-      </div>
-      <div class="divider-v"></div>
-      <button class="btn btn-primary" onclick="simPlay()">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><polygon points="2,1 11,6 2,11"/></svg>Play
-      </button>
-      <button class="btn" onclick="simPause()">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><rect x="1" y="1" width="3.5" height="10"/><rect x="7.5" y="1" width="3.5" height="10"/></svg>Pause
-      </button>
-      <button class="btn" onclick="simStep()">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><polygon points="1,1 8,6 1,11"/><rect x="9" y="1" width="2.5" height="10"/></svg>Step
-      </button>
-      <div class="divider-v"></div>
-      <button class="btn" onclick="simReset()">
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6a4 4 0 1 1 1.5 3.1"/><polyline points="2,3 2,6 5,6"/></svg>Reset
-      </button>
-    </div>
-  </header>
+  <div id="app">
 
-  <div class="main">
-    <aside class="sidebar">
-      <div class="panel-tabs">
-        <div class="tab active" onclick="switchTab(0,this)">Parameters</div>
-        <div class="tab" onclick="switchTab(1,this)">Equations</div>
-      </div>
-
-      <!-- TAB 0: Parameters -->
-      <div class="sidebar-content" id="tab0">
-
-        <div class="section">
-          <div class="section-title">Concentration Map</div>
-          <div class="legend-labels"><span>0 — Low <span style="color:#2563eb;font-weight:600">a</span></span><span>High <span style="color:#dc2626;font-weight:600">a</span> — 1</span></div>
-          <div class="legend-row"><canvas id="legendCanvas" width="224" height="14" style="display:block;width:100%;height:14px"></canvas></div>
-          <div style="font-size:10.5px;color:var(--text-subtle);line-height:1.6">
-            Fill color → activator <b style="color:#2563eb">a</b><br>
-            Border thickness+red → inhibitor <b style="color:#dc2626">i</b>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Activator · <span style="color:#2563eb">a</span></div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">β<sub>a</sub> production rate</span><span class="param-val" id="vBa">1.00</span></div>
-            <input type="range" id="sBa" min="0.05" max="4" step="0.05" value="1.0" oninput="pv('vBa',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">λ<sub>a</sub> degradation rate</span><span class="param-val" id="vLa">0.20</span></div>
-            <input type="range" id="sLa" min="0.01" max="2" step="0.01" value="0.2" oninput="pv('vLa',this.value,'f2')">
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Inhibitor · <span style="color:#dc2626">i</span></div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">β<sub>i</sub> production rate</span><span class="param-val" id="vBi">0.80</span></div>
-            <input type="range" id="sBi" min="0.05" max="4" step="0.05" value="0.8" oninput="pv('vBi',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">λ<sub>i</sub> degradation rate</span><span class="param-val" id="vLi">0.15</span></div>
-            <input type="range" id="sLi" min="0.01" max="2" step="0.01" value="0.15" oninput="pv('vLi',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">D<sub>i</sub> diffusion coefficient</span><span class="param-val" id="vDi">0.40</span></div>
-            <input type="range" id="sDi" min="0" max="1.5" step="0.01" value="0.4" oninput="pv('vDi',this.value,'f2')">
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Hill Function · f(S) = S<sup>n</sup>/(K<sup>n</sup>+S<sup>n</sup>)</div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">K activation threshold</span><span class="param-val" id="vK">0.50</span></div>
-            <input type="range" id="sK" min="0.05" max="3" step="0.05" value="0.5" oninput="pv('vK',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">n Hill coefficient</span><span class="param-val" id="vN">2.0</span></div>
-            <input type="range" id="sN" min="0.5" max="8" step="0.5" value="2" oninput="pv('vN',this.value,'f1')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Signal range</span><span class="param-val" id="vSR">70 px</span></div>
-            <input type="range" id="sSR" min="10" max="200" step="5" value="70" oninput="pv('vSR',this.value,'px')">
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Cell Physics</div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Adhesion</span><span class="param-val" id="vAdh">0.50</span></div>
-            <input type="range" id="sAdh" min="0" max="3" step="0.05" value="0.5" oninput="pv('vAdh',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Repulsion</span><span class="param-val" id="vRep">0.25</span></div>
-            <input type="range" id="sRep" min="0" max="3" step="0.05" value="0.25" oninput="pv('vRep',this.value,'f2')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Exclusion radius</span><span class="param-val" id="vER">18 px</span></div>
-            <input type="range" id="sER" min="5" max="40" step="1" value="18" oninput="pv('vER',this.value,'px')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Friction</span><span class="param-val" id="vFr">0.88</span></div>
-            <input type="range" id="sFr" min="0.5" max="0.99" step="0.01" value="0.88" oninput="pv('vFr',this.value,'f2')">
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Population</div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Cell count</span><span class="param-val" id="vCC">80</span></div>
-            <input type="range" id="sCC" min="10" max="200" step="5" value="80" oninput="pv('vCC',this.value,'int')">
-          </div>
-          <div class="param-row">
-            <div class="param-label"><span class="param-name">Cell radius</span><span class="param-val" id="vCR">15 px</span></div>
-            <input type="range" id="sCR" min="6" max="32" step="1" value="15" oninput="pv('vCR',this.value,'px')">
-          </div>
-          <button class="btn btn-full" onclick="simReset()">
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6a4 4 0 1 1 1.5 3.1"/><polyline points="2,3 2,6 5,6"/></svg>
-            Reinitialize
+    <!-- ── Header ── -->
+    <header>
+      <div class="h-left">
+        <!-- Logo -->
+        <svg width="20" height="20" viewBox="0 0 28 28" style="flex-shrink:0">
+          <polygon points="14,2 24,7.5 24,20.5 14,26 4,20.5 4,7.5" fill="none" stroke="#3ca683" stroke-width="2.2" />
+          <polygon points="14,8 19.5,11.2 19.5,17.8 14,21 8.5,17.8 8.5,11.2" fill="#3ca683" opacity="0.25" />
+        </svg>
+        <span class="app-title">Turing Pattern Simulator</span>
+        <div class="h-icon-row">
+          <button class="icon-btn" title="New">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </button>
+          <button class="icon-btn" title="Save">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+          </button>
+          <button class="icon-btn" title="Export">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
           </button>
         </div>
+      </div>
 
-        <div class="section">
-          <div class="section-title">Live Stats</div>
-          <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Mean a</div><div class="stat-value" id="statA">0.000</div></div>
-            <div class="stat-card"><div class="stat-label">Mean i</div><div class="stat-value" id="statI">0.000</div></div>
-            <div class="stat-card"><div class="stat-label">FPS</div><div class="stat-value" id="statFPS">—</div></div>
-            <div class="stat-card"><div class="stat-label">Steps</div><div class="stat-value" id="statSteps">0</div></div>
-          </div>
-        </div>
+      <div class="h-center">
+        <input class="proj-input" value="Untitled Simulation" spellcheck="false" />
+      </div>
 
-      </div><!-- /tab0 -->
-
-      <!-- TAB 1: Equations -->
-      <div class="sidebar-content" id="tab1" style="display:none">
-        <div class="section">
-          <div class="section-title">Activator dynamics</div>
-          <div class="eq-box">
-            ∂<span class="va">a</span>/∂t =<br>
-            &nbsp;β<sub>a</sub>·f(Σ<span class="va">a</span><sub>nbr</sub>)<br>
-            &nbsp;− λ<sub>a</sub>·<span class="va">a</span><sub>self</sub>
-          </div>
+      <div class="h-right">
+        <button class="icon-btn" id="btn-step" title="Step">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polygon points="5 3 19 12 5 21 5 3" />
+            <line x1="19" y1="3" x2="19" y2="21" />
+          </svg>
+        </button>
+        <button class="icon-btn" id="btn-playpause-icon" title="Play">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            id="pp-icon-svg">
+            <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
+          </svg>
+        </button>
+        <button class="run-btn" id="btn-run">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" id="run-icon">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          <span id="run-label">Run Simulation</span>
+        </button>
+        <div class="time-badge">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3ca683" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span class="time-badge-val" id="time-display">0.0</span>
         </div>
-        <div class="section">
-          <div class="section-title">Inhibitor dynamics</div>
-          <div class="eq-box">
-            ∂<span class="vi">i</span>/∂t =<br>
-            &nbsp;D<sub>i</sub>·∂²<span class="vi">i</span>/∂x²<br>
-            &nbsp;+ β<sub>i</sub>·f(Σ<span class="va">a</span><sub>nbr</sub>)<br>
-            &nbsp;− λ<sub>i</sub>·<span class="vi">i</span><sub>self</sub>
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-title">Regulatory (Hill) function</div>
-          <div class="eq-box">
-            f(S) = S<sup>n</sup> / (<span class="vk">K</span><sup>n</sup> + S<sup>n</sup>)<br><br>
-            S &nbsp;= Σ <span class="va">a</span><sub>neighbors</sub><br>
-            <span class="vk">K</span> &nbsp;= activation threshold<br>
-            n &nbsp;= Hill coefficient
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-title">Full substituted form</div>
-          <div class="eq-box">
-            ∂<span class="va">a</span>/∂t =<br>
-            &nbsp;β<sub>a</sub>·(Σ<span class="va">a</span>ₙ)<sup>n</sup> / (<span class="vk">K</span><sup>n</sup>+(Σ<span class="va">a</span>ₙ)<sup>n</sup>)<br>
-            &nbsp;− λ<sub>a</sub>·<span class="va">a</span><br><br>
-            ∂<span class="vi">i</span>/∂t = D<sub>i</sub>·∇²<span class="vi">i</span><br>
-            &nbsp;+ β<sub>i</sub>·(Σ<span class="va">a</span>ₙ)<sup>n</sup> / (<span class="vk">K</span><sup>n</sup>+(Σ<span class="va">a</span>ₙ)<sup>n</sup>)<br>
-            &nbsp;− λ<sub>i</sub>·<span class="vi">i</span>
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-title">Discrete Laplacian</div>
-          <div class="eq-box">
-            ∇²<span class="vi">i</span> ≈ Σ<sub>j∈nbrs</sub> w<sub>j</sub>·(<span class="vi">i</span><sub>j</sub>−<span class="vi">i</span><sub>self</sub>)<br>
-            where w<sub>j</sub> = 1/(d<sub>ij</sub>² + ε)
-          </div>
-        </div>
-        <div class="section">
-          <div class="section-title">Numerical method</div>
-          <div style="font-size:11.5px;color:var(--text-muted);line-height:1.7">
-            Forward Euler integration<br>
-            Δt = 0.05 per frame<br>
-            Concentrations clamped ≥ 0<br><br>
-            Physics: force-based 2D with friction, volume exclusion, adhesion + repulsion in signal range
-          </div>
-        </div>
-      </div><!-- /tab1 -->
-    </aside>
-
-    <div class="canvas-area">
-      <canvas id="simCanvas"></canvas>
-      <div class="canvas-overlay">
-        <div class="overlay-badge" id="statusBadge"><span class="status-dot" id="statusDot2"></span>Paused</div>
-        <div class="overlay-badge">
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:4px;vertical-align:middle"><circle cx="5" cy="5" r="4"/><line x1="8.5" y1="8.5" x2="11" y2="11"/></svg><span id="zoomLevel">100%</span>
-        </div>
-        <button class="btn" style="font-size:11px;height:28px;padding:0 10px" onclick="resetView()">
-          <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1a5 5 0 1 0 4.9 4"/><polyline points="12,1 12,5 8,5"/></svg>
-          Reset View
+        <button class="icon-btn" id="btn-reset" title="Reset">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
+          </svg>
+        </button>
+        <button class="icon-btn" title="Settings">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+          </svg>
         </button>
       </div>
-    </div>
-  </div>
-</div>
+    </header>
 
-<script>
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const g = id => document.getElementById(id);
-const P = id => parseFloat(g(id).value);
-function pv(vid, val, fmt) {
-  const v = parseFloat(val);
-  const el = g(vid);
-  if (fmt==='f2') el.textContent = v.toFixed(2);
-  else if (fmt==='f1') el.textContent = v.toFixed(1);
-  else if (fmt==='px') el.textContent = Math.round(v)+' px';
-  else el.textContent = Math.round(v);
-}
-function switchTab(idx, el) {
-  document.querySelectorAll('.tab').forEach((t,i) => { t.classList.toggle('active', i===idx); });
-  [g('tab0'),g('tab1')].forEach((t,i) => { t.style.display = i===idx ? '' : 'none'; });
-}
+    <!-- ── Body ── -->
+    <div class="body">
 
-// ── Legend ───────────────────────────────────────────────────────────────────
-(function(){
-  const lc = g('legendCanvas');
-  const lx = lc.getContext('2d');
-  const grad = lx.createLinearGradient(0,0,lc.width,0);
-  [[0,'#3b82f6'],[0.25,'#8cb4ff'],[0.5,'#f3f3f3'],[0.75,'#ffb44f'],[1,'#ea580c']].forEach(([t,c])=>grad.addColorStop(t,c));
-  lx.fillStyle = grad;
-  lx.fillRect(0,0,lc.width,lc.height);
-})();
+      <!-- ── Sidebar ── -->
+      <aside>
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="parameters">Parameters</button>
+          <button class="tab-btn" data-tab="equations">Equations</button>
+          <button class="tab-btn" data-tab="info">Info</button>
+        </div>
 
-// ── Canvas ───────────────────────────────────────────────────────────────────
-const canvas = g('simCanvas');
-const ctx = canvas.getContext('2d');
-function resizeCanvas() { const a=canvas.parentElement; canvas.width=a.clientWidth; canvas.height=a.clientHeight; }
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+        <div class="sidebar-scroll">
 
-// ── Camera ───────────────────────────────────────────────────────────────────
-const cam = { x:0, y:0, scale:1 };
-const ZMIN=0.05, ZMAX=12;
-let isPanning=false, panStart={x:0,y:0}, camStart={x:0,y:0};
-function resetView(){ cam.x=0;cam.y=0;cam.scale=1;updateZoom();if(!running)render(); }
-function updateZoom(){ g('zoomLevel').textContent=Math.round(cam.scale*100)+'%'; }
-function applyZoom(mx,my,factor){
-  const ns=Math.max(ZMIN,Math.min(ZMAX,cam.scale*factor));
-  cam.x=mx-(mx-cam.x)*(ns/cam.scale);
-  cam.y=my-(my-cam.y)*(ns/cam.scale);
-  cam.scale=ns; updateZoom(); if(!running)render();
-}
-canvas.addEventListener('wheel',e=>{
-  e.preventDefault();
-  const r=canvas.getBoundingClientRect();
-  applyZoom(e.clientX-r.left, e.clientY-r.top, e.deltaY<0?1.1:1/1.1);
-},{passive:false});
-canvas.addEventListener('mousedown',e=>{
-  if(e.button!==0)return;
-  isPanning=true; panStart={x:e.clientX,y:e.clientY}; camStart={x:cam.x,y:cam.y};
-  canvas.classList.add('panning');
-});
-window.addEventListener('mousemove',e=>{
-  if(!isPanning)return;
-  cam.x=camStart.x+(e.clientX-panStart.x);
-  cam.y=camStart.y+(e.clientY-panStart.y);
-  if(!running)render();
-});
-window.addEventListener('mouseup',()=>{isPanning=false;canvas.classList.remove('panning');});
-let lastTD=null;
-canvas.addEventListener('touchstart',e=>{
-  if(e.touches.length===1){isPanning=true;panStart={x:e.touches[0].clientX,y:e.touches[0].clientY};camStart={x:cam.x,y:cam.y};}
-  else if(e.touches.length===2){isPanning=false;lastTD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
-},{passive:true});
-canvas.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  if(e.touches.length===1&&isPanning){cam.x=camStart.x+(e.touches[0].clientX-panStart.x);cam.y=camStart.y+(e.touches[0].clientY-panStart.y);if(!running)render();}
-  else if(e.touches.length===2&&lastTD){
-    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    const mx=(e.touches[0].clientX+e.touches[1].clientX)/2,my=(e.touches[0].clientY+e.touches[1].clientY)/2;
-    const r=canvas.getBoundingClientRect();
-    applyZoom(mx-r.left,my-r.top,d/lastTD);
-    lastTD=d;
-  }
-},{passive:false});
-canvas.addEventListener('touchend',()=>{isPanning=false;lastTD=null;});
+          <!-- Parameters Tab -->
+          <div class="tab-panel active" id="tab-parameters">
+            <div class="section-head">Reaction Model</div>
+            <!-- param rows injected by JS -->
+            <div id="params-reaction"></div>
 
-// ── Colormap ─────────────────────────────────────────────────────────────────
-const CSTOPS = [
-  [0,   [59,130,246]],
-  [0.25,[140,180,255]],
-  [0.5, [244,244,244]],
-  [0.75,[255,176,60]],
-  [1.0, [234,88,12]],
-];
-function cmap(t) {
-  t = Math.max(0,Math.min(1,t));
-  for(let s=0;s<CSTOPS.length-1;s++){
-    const [t0,[r0,g0,b0]]=CSTOPS[s],[t1,[r1,g1,b1]]=CSTOPS[s+1];
-    if(t<=t1){const p=(t-t0)/(t1-t0);return[r0+(r1-r0)*p|0,g0+(g1-g0)*p|0,b0+(b1-b0)*p|0];}
-  }
-  return CSTOPS[CSTOPS.length-1][1];
-}
+            <div class="section-head">Diffusion</div>
+            <div id="params-diffusion"></div>
 
-// ── Hexagon helper ────────────────────────────────────────────────────────────
-function hexPath(cx,cy,r){
-  ctx.beginPath();
-  for(let k=0;k<6;k++){
-    const ang=Math.PI/6+k*Math.PI/3;
-    const px=cx+r*Math.cos(ang),py=cy+r*Math.sin(ang);
-    k===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
-  }
-  ctx.closePath();
-}
+            <div class="section-head">Hill Function</div>
+            <div id="params-hill"></div>
 
-// ── Simulation state ─────────────────────────────────────────────────────────
-let cells=[], running=false, simTime=0, stepCount=0;
-let animId=null, lastFrame=0, fpsSmooth=0;
+            <div class="section-head">Activator Scale</div>
+            <div class="legend-wrap">
+              <div class="legend-bar"></div>
+              <div class="legend-lbls"><span>Low [a]</span><span>High [a]</span></div>
+              <div class="legend-colors">
+                <span class="lc-blue">● Blue</span>
+                <span class="lc-red">● Red</span>
+              </div>
+            </div>
+          </div>
 
-function initCells(){
-  const n=Math.round(P('sCC'));
-  const W=canvas.width, H=canvas.height, margin=50;
-  cells=[];
-  for(let k=0;k<n;k++){
-    cells.push({
-      x: margin+Math.random()*(W-2*margin),
-      y: margin+Math.random()*(H-2*margin),
-      vx: (Math.random()-0.5)*0.4,
-      vy: (Math.random()-0.5)*0.4,
-      // Initial concentrations: small random perturbation around a low-steady-state
-      a: 0.04 + Math.random()*0.12,
-      i: 0.03 + Math.random()*0.08,
-      r: P('sCR'),
+          <!-- Equations Tab -->
+          <div class="tab-panel" id="tab-equations">
+            <div class="section-head">Neighbourhood</div>
+            <div class="eq-card"><span class="eq-lbl">Sum</span><span class="eq-val">S = Σ aₙ</span></div>
+            <div class="eq-card"><span class="eq-lbl">Hill</span><span class="eq-val accent">f(S) = Sⁿ / (Kⁿ +
+                Sⁿ)</span></div>
+            <div class="section-head">Dynamics</div>
+            <div class="eq-card"><span class="eq-lbl">Activator</span><span class="eq-val">∂a/∂t = βa·f(S) − λa·a</span>
+            </div>
+            <div class="eq-card"><span class="eq-lbl">Inhibitor</span><span class="eq-val">∂i/∂t = Di·∇²i + βi·f(S) −
+                λi·i</span></div>
+            <div class="section-head">Laplacian</div>
+            <div class="eq-card"><span class="eq-lbl">∇²i</span><span class="eq-val dim">≈ avg(iₙ) − i</span></div>
+          </div>
+
+          <!-- Info Tab -->
+          <div class="tab-panel" id="tab-info">
+            <div class="section-head">Grid</div>
+            <div class="info-row"><span class="info-lbl">Dimensions</span><span class="info-val" id="info-dim"></span>
+            </div>
+            <div class="info-row"><span class="info-lbl">Total Cells</span><span class="info-val"
+                id="info-cells"></span></div>
+            <div class="info-row"><span class="info-lbl">Time Step</span><span class="info-val">Δt = 0.15</span></div>
+            <div class="info-row"><span class="info-lbl">Step Count</span><span class="info-val"
+                id="info-steps">0</span></div>
+            <div class="info-row"><span class="info-lbl">Topology</span><span class="info-val">Hex lattice</span></div>
+            <div class="section-head">Status</div>
+            <div class="info-row"><span class="info-lbl">State</span><span class="info-val" id="info-state">⏸
+                Paused</span></div>
+            <div class="info-row"><span class="info-lbl">Time</span><span class="info-val" id="info-time">0.0</span>
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- ── Canvas ── -->
+      <main>
+        <div class="canvas-wrap">
+          <canvas id="sim-canvas"></canvas>
+
+          <!-- Start overlay -->
+          <div id="start-overlay">
+            <div class="overlay-card">
+              <div class="overlay-hex">⬡</div>
+              <div class="overlay-title">Ready to Simulate</div>
+              <div class="overlay-sub">Turing patterns emerge from random noise</div>
+              <button class="run-btn" id="btn-overlay-run" style="margin-left:0">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Run Simulation
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zoom panel -->
+        <div class="zoom-panel">
+          <button class="zoom-btn" title="Zoom in">+</button>
+          <div class="zoom-divider"></div>
+          <button class="zoom-btn" title="Zoom out">−</button>
+          <div class="zoom-divider"></div>
+          <button class="zoom-btn" title="Fit">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 3 21 3 21 9" />
+              <polyline points="9 21 3 21 3 15" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+              <line x1="3" y1="21" x2="10" y2="14" />
+            </svg>
+          </button>
+          <div class="zoom-divider"></div>
+          <button class="zoom-btn" title="Lock">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+          </button>
+        </div>
+      </main>
+
+    </div><!-- .body -->
+  </div><!-- #app -->
+
+  <script>
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  Turing Pattern Reaction-Diffusion Simulator
+    //  Pure HTML / CSS / JS  –  no frameworks
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // ── Constants ──────────────────────────────────────────────────────────────
+    const N = 52;
+    const HEX_SIZE = 6.8;
+    const DT = 0.15;
+    const CLR_LOW = [59, 130, 246];   // blue
+    const CLR_HIGH = [239, 68, 68];    // red
+
+    // ── Parameter definitions ──────────────────────────────────────────────────
+    const PARAM_META = [
+      { key: 'ba', label: 'Activator Prod', sym: 'βa', min: 0.01, max: 0.25, step: 0.005, dp: 3, group: 'reaction' },
+      { key: 'bi', label: 'Inhibitor Prod', sym: 'βi', min: 0.01, max: 0.35, step: 0.005, dp: 3, group: 'reaction' },
+      { key: 'la', label: 'Activator Degrade', sym: 'λa', min: 0.01, max: 0.25, step: 0.005, dp: 3, group: 'reaction' },
+      { key: 'li', label: 'Inhibitor Degrade', sym: 'λi', min: 0.01, max: 0.25, step: 0.005, dp: 3, group: 'reaction' },
+      { key: 'di', label: 'Inhibitor Diffusion', sym: 'Di', min: 0.0, max: 1.0, step: 0.01, dp: 2, group: 'diffusion' },
+      { key: 'K', label: 'Activ. Threshold', sym: 'K', min: 0.5, max: 10, step: 0.1, dp: 1, group: 'hill' },
+      { key: 'n', label: 'Hill Coefficient', sym: 'n', min: 1.0, max: 6.0, step: 0.25, dp: 2, group: 'hill' },
+    ];
+
+    const DEFAULT_PARAMS = { ba: 0.09, bi: 0.14, la: 0.07, li: 0.05, di: 0.45, K: 2.8, n: 2.5 };
+
+    // ── Precomputed geometry ───────────────────────────────────────────────────
+    const W = Math.sqrt(3) * HEX_SIZE;
+    const ROW_H = HEX_SIZE * 1.5;
+
+    // Neighbour map
+    const NEIGHBOR_MAP = (() => {
+      const map = new Array(N * N);
+      for (let r = 0; r < N; r++) {
+        for (let c = 0; c < N; c++) {
+          const idx = r * N + c;
+          const dirs = r % 2 === 0
+            ? [[-1, -1], [-1, 0], [0, -1], [0, 1], [1, -1], [1, 0]]
+            : [[-1, 0], [-1, 1], [0, -1], [0, 1], [1, 0], [1, 1]];
+          const ns = [];
+          for (const [dr, dc] of dirs) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nr < N && nc >= 0 && nc < N) ns.push(nr * N + nc);
+          }
+          map[idx] = new Int16Array(ns);
+        }
+      }
+      return map;
+    })();
+
+    // Hex vertex unit vectors (pointy-top)
+    const HEX_VERTS = Array.from({ length: 6 }, (_, k) => {
+      const a = (Math.PI / 3) * k - Math.PI / 6;
+      return [Math.cos(a), Math.sin(a)];
     });
-  }
-  simTime=0; stepCount=0;
-}
 
-// ── Hill function ─────────────────────────────────────────────────────────────
-function hill(S, K, n){
-  if(S<=0) return 0;
-  const Sn=Math.pow(S,n), Kn=Math.pow(K,n);
-  return Sn/(Kn+Sn);
-}
+    // Pixel centres
+    const GRID_CX = new Float32Array(N * N);
+    const GRID_CY = new Float32Array(N * N);
+    for (let r = 0; r < N; r++)
+      for (let c = 0; c < N; c++) {
+        const idx = r * N + c;
+        GRID_CX[idx] = c * W + (r % 2 === 1 ? W / 2 : 0) + W;
+        GRID_CY[idx] = r * ROW_H + HEX_SIZE + 2;
+      }
 
-// ── Core simulation step ──────────────────────────────────────────────────────
-function doStep(dt){
-  const Ba=P('sBa'), La=P('sLa');
-  const Bi=P('sBi'), Li=P('sLi'), Di=P('sDi');
-  const K=P('sK'), n=P('sN'), SR=P('sSR');
-  const adh=P('sAdh'), rep=P('sRep'), er=P('sER'), fr=P('sFr');
-  const W=canvas.width, H=canvas.height;
-  const nc=cells.length;
-  const DT=dt*0.05; // bio time step scale
+    const CANVAS_W = Math.ceil(N * W + W * 1.5 + 2);
+    const CANVAS_H = Math.ceil(N * ROW_H + HEX_SIZE * 2 + 4);
 
-  // Pre-update cell radii
-  const cr=P('sCR');
+    // ── Colour helper ──────────────────────────────────────────────────────────
+    function hexColor(val) {
+      const r = (CLR_LOW[0] + (CLR_HIGH[0] - CLR_LOW[0]) * val) | 0;
+      const g = (CLR_LOW[1] + (CLR_HIGH[1] - CLR_LOW[1]) * val) | 0;
+      const b = (CLR_LOW[2] + (CLR_HIGH[2] - CLR_LOW[2]) * val) | 0;
+      return `rgb(${r},${g},${b})`;
+    }
 
-  // ── Build neighbor lists ──
-  const nbrs=Array.from({length:nc},()=>[]);
-  for(let i=0;i<nc;i++){
-    for(let j=i+1;j<nc;j++){
-      const dx=cells[j].x-cells[i].x, dy=cells[j].y-cells[i].y;
-      const d2=dx*dx+dy*dy;
-      const d=Math.sqrt(d2);
-      if(d<SR){
-        nbrs[i].push({j,d,dx,dy});
-        nbrs[j].push({j:i,d,dx:-dx,dy:-dy});
+    // ── Simulation state ───────────────────────────────────────────────────────
+    const bufsA = [new Float32Array(N * N), new Float32Array(N * N)];
+    const bufsI = [new Float32Array(N * N), new Float32Array(N * N)];
+    let curBuf = 0;
+    let simTime = 0;
+    let stepCount = 0;
+    let params = { ...DEFAULT_PARAMS };
+    let running = false;
+    let rafId = null;
+
+    // ── DOM refs ───────────────────────────────────────────────────────────────
+    const canvas = document.getElementById('sim-canvas');
+    const ctx = canvas.getContext('2d');
+    const timeDisplay = document.getElementById('time-display');
+    const infoSteps = document.getElementById('info-steps');
+    const infoState = document.getElementById('info-state');
+    const infoTime = document.getElementById('info-time');
+    const startOverlay = document.getElementById('start-overlay');
+    const btnStep = document.getElementById('btn-step');
+    const btnRun = document.getElementById('btn-run');
+    const runLabel = document.getElementById('run-label');
+    const runIcon = document.getElementById('run-icon');
+    const btnPPIcon = document.getElementById('btn-playpause-icon');
+    const ppIconSvg = document.getElementById('pp-icon-svg');
+
+    // ── Canvas setup ───────────────────────────────────────────────────────────
+    canvas.width = CANVAS_W;
+    canvas.height = CANVAS_H;
+
+    // ── Grid init ──────────────────────────────────────────────────────────────
+    function initGrid() {
+      const a = bufsA[0], i = bufsI[0];
+      for (let k = 0; k < N * N; k++) {
+        a[k] = 0.4 + Math.random() * 0.6;
+        i[k] = 0.4 + Math.random() * 0.6;
+      }
+      curBuf = 0;
+      simTime = 0;
+      stepCount = 0;
+    }
+
+    // ── Draw ───────────────────────────────────────────────────────────────────
+    function drawGrid() {
+      const a = bufsA[curBuf];
+      let mn = Infinity, mx = -Infinity;
+      for (let k = 0; k < N * N; k++) {
+        if (a[k] < mn) mn = a[k];
+        if (a[k] > mx) mx = a[k];
+      }
+      const rng = mx - mn || 1;
+      const s = HEX_SIZE - 0.55;
+
+      ctx.fillStyle = '#dde3e8';
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      for (let idx = 0; idx < N * N; idx++) {
+        ctx.fillStyle = hexColor((a[idx] - mn) / rng);
+        const cx = GRID_CX[idx], cy = GRID_CY[idx];
+        ctx.beginPath();
+        for (let k = 0; k < 6; k++) {
+          const hx = cx + s * HEX_VERTS[k][0];
+          const hy = cy + s * HEX_VERTS[k][1];
+          k === 0 ? ctx.moveTo(hx, hy) : ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+        ctx.fill();
       }
     }
-  }
 
-  // ── Biochemistry (Euler) ──
-  const newA=new Float64Array(nc);
-  const newI=new Float64Array(nc);
-  for(let i=0;i<nc;i++){
-    const nb=nbrs[i];
-    let sumA=0, lapI=0, wSum=0;
-    for(const {j,d} of nb){
-      sumA+=cells[j].a;
-      const w=1/(d*d+0.01);
-      lapI+=w*(cells[j].i-cells[i].i);
-      wSum+=w;
-    }
-    // Normalize laplacian by effective count (or just weight sum)
-    if(nb.length>0 && wSum>0) lapI/=wSum;
+    // ── Simulation step ────────────────────────────────────────────────────────
+    //   S      = Σ a_neighbours
+    //   f(S)   = Sⁿ / (Kⁿ + Sⁿ)
+    //   ∂a/∂t  = βa·f(S) − λa·a
+    //   ∂i/∂t  = Di·∇²i + βi·f(S) − λi·i    (∇²i ≈ avg(iₙ) − i)
+    function stepSim() {
+      const nxt = 1 - curBuf;
+      const a = bufsA[curBuf], iv = bufsI[curBuf];
+      const na = bufsA[nxt], ni = bufsI[nxt];
+      const Kn = Math.pow(params.K, params.n);
 
-    const fS=hill(sumA, K, n);
+      for (let idx = 0; idx < N * N; idx++) {
+        const nbrs = NEIGHBOR_MAP[idx];
+        const nn = nbrs.length;
+        let sumA = 0, sumI = 0;
+        for (let j = 0; j < nn; j++) { sumA += a[nbrs[j]]; sumI += iv[nbrs[j]]; }
 
-    // ∂a/∂t = βa·f(S) − λa·a
-    const da=Ba*fS - La*cells[i].a;
-    // ∂i/∂t = Di·∇²i + βi·f(S) − λi·i
-    const di2=Di*lapI*nb.length + Bi*fS - Li*cells[i].i;
+        const Sn = nn > 0 ? Math.pow(sumA, params.n) : 0;
+        const f = Sn / (Kn + Sn + 1e-12);
 
-    newA[i]=Math.max(0, cells[i].a + da*DT);
-    newI[i]=Math.max(0, cells[i].i + di2*DT);
-  }
-
-  // ── Physics forces ──
-  const fx=new Float64Array(nc), fy=new Float64Array(nc);
-
-  for(let i=0;i<nc;i++){
-    for(const {j,d,dx,dy} of nbrs[i]){
-      if(j<i) continue;
-      if(d<er&&d>0){
-        // Volume exclusion
-        const f=2.8*(er-d)/d;
-        fx[i]-=dx*f; fy[i]-=dy*f;
-        fx[j]+=dx*f; fy[j]+=dy*f;
-      } else if(d<SR){
-        // Adhesion + soft repulsion
-        const env=Math.min(1,(SR-d)/SR*2);
-        const aMag=adh/(d+1);
-        const rMag=rep*er/(d*d+1);
-        const net=(aMag-rMag)/d*env;
-        fx[i]+=dx*net; fy[i]+=dy*net;
-        fx[j]-=dx*net; fy[j]-=dy*net;
+        na[idx] = Math.max(0, a[idx] + DT * (params.ba * f - params.la * a[idx]));
+        const lap = nn > 0 ? sumI / nn - iv[idx] : 0;
+        ni[idx] = Math.max(0, iv[idx] + DT * (params.di * lap + params.bi * f - params.li * iv[idx]));
       }
+      curBuf = nxt;
+      simTime += DT;
+      stepCount++;
     }
-    // Exclusion for pairs outside signal range
-    for(let j=0;j<nc;j++){
-      if(j===i) continue;
-      const dx=cells[j].x-cells[i].x, dy=cells[j].y-cells[i].y;
-      const d=Math.sqrt(dx*dx+dy*dy);
-      if(d>0&&d<er){
-        const f=2.8*(er-d)/d;
-        fx[i]-=dx*f; fy[i]-=dy*f;
+
+    // ── Animation loop ─────────────────────────────────────────────────────────
+    function loop() {
+      if (!running) return;
+      stepSim();
+      drawGrid();
+      updateDisplays();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    // ── UI update helpers ──────────────────────────────────────────────────────
+    function updateDisplays() {
+      const t = simTime.toFixed(1);
+      timeDisplay.textContent = t;
+      infoTime.textContent = t;
+      infoSteps.textContent = stepCount;
+      infoState.textContent = running ? '▶ Running' : '⏸ Paused';
+      infoState.classList.toggle('accent', running);
+    }
+
+    function setRunningState(val) {
+      running = val;
+
+      // Update run-btn label + icon
+      if (running) {
+        runLabel.textContent = 'Pause';
+        runIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        ppIconSvg.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        btnPPIcon.title = 'Pause';
+        btnStep.disabled = true;
+      } else {
+        runLabel.textContent = 'Run Simulation';
+        runIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+        ppIconSvg.innerHTML = '<polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>';
+        btnPPIcon.title = 'Play';
+        btnStep.disabled = false;
       }
-    }
-  }
-
-  // ── Integrate ──
-  for(let i=0;i<nc;i++){
-    cells[i].a=newA[i];
-    cells[i].i=newI[i];
-    cells[i].r=cr;
-    cells[i].vx=(cells[i].vx+fx[i]*dt)*fr;
-    cells[i].vy=(cells[i].vy+fy[i]*dt)*fr;
-    cells[i].x+=cells[i].vx;
-    cells[i].y+=cells[i].vy;
-    const pad=cr+2;
-    if(cells[i].x<pad){cells[i].x=pad;cells[i].vx*=-0.5;}
-    if(cells[i].x>W-pad){cells[i].x=W-pad;cells[i].vx*=-0.5;}
-    if(cells[i].y<pad){cells[i].y=pad;cells[i].vy*=-0.5;}
-    if(cells[i].y>H-pad){cells[i].y=H-pad;cells[i].vy*=-0.5;}
-  }
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function render(){
-  const W=canvas.width,H=canvas.height;
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#fafafa';
-  ctx.fillRect(0,0,W,H);
-
-  // World-aligned dot grid
-  ctx.fillStyle='#dedede';
-  const gs=24*cam.scale;
-  const ox=((cam.x%gs)+gs)%gs, oy=((cam.y%gs)+gs)%gs;
-  for(let x=ox;x<W;x+=gs) for(let y=oy;y<H;y+=gs){
-    ctx.beginPath(); ctx.arc(x,y,Math.max(0.4,0.65*cam.scale),0,Math.PI*2); ctx.fill();
-  }
-
-  ctx.save();
-  ctx.setTransform(cam.scale,0,0,cam.scale,cam.x,cam.y);
-
-  for(const c of cells){
-    const aC=Math.min(1,c.a);
-    const iC=Math.min(1,c.i);
-    const [r,gC,b]=cmap(aC);
-
-    // Soft glow when activator is elevated
-    if(aC>0.25){
-      const gd=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,c.r*2.4);
-      gd.addColorStop(0,`rgba(${r},${gC},${b},0.14)`);
-      gd.addColorStop(1,'rgba(0,0,0,0)');
-      hexPath(c.x,c.y,c.r*2.2);
-      ctx.fillStyle=gd; ctx.fill();
+      updateDisplays();
     }
 
-    // Hexagon body — activator colormap fill
-    hexPath(c.x,c.y,c.r);
-    ctx.fillStyle=`rgb(${r},${gC},${b})`;
-    ctx.fill();
+    // ── Controls ───────────────────────────────────────────────────────────────
+    function handlePlay() {
+      if (running) return;
+      startOverlay.style.display = 'none';
+      setRunningState(true);
+      rafId = requestAnimationFrame(loop);
+    }
 
-    // Border — inhibitor encoded: thickness 0.8→4px, color shifts toward crimson
-    const bw=(0.8+iC*3.5)/cam.scale;
-    const iR=Math.round(50+iC*200), iG=Math.round(20+iC*10), iB=20;
-    ctx.strokeStyle=`rgba(${iR},${iG},${iB},${0.35+iC*0.65})`;
-    ctx.lineWidth=bw;
-    ctx.stroke();
+    function handlePause() {
+      if (!running) return;
+      running = false;
+      cancelAnimationFrame(rafId);
+      setRunningState(false);
+    }
 
-    // Specular highlight
-    hexPath(c.x-c.r*0.18,c.y-c.r*0.22,c.r*0.36);
-    ctx.fillStyle='rgba(255,255,255,0.26)';
-    ctx.fill();
-  }
+    function handlePlayPause() {
+      running ? handlePause() : handlePlay();
+    }
 
-  ctx.restore();
-}
+    function handleStep() {
+      if (running) return;
+      startOverlay.style.display = 'none';
+      stepSim();
+      drawGrid();
+      updateDisplays();
+    }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
-let statsTimer=0;
-function updateStats(){
-  if(++statsTimer%10!==0) return;
-  let sumA=0,sumI=0;
-  for(const c of cells){sumA+=c.a;sumI+=c.i;}
-  const n=cells.length||1;
-  g('statA').textContent=(sumA/n).toFixed(3);
-  g('statI').textContent=(sumI/n).toFixed(3);
-  g('statSteps').textContent=stepCount;
-  g('statFPS').textContent=Math.round(fpsSmooth);
-}
+    function handleReset() {
+      handlePause();
+      setTimeout(() => {
+        initGrid();
+        drawGrid();
+        updateDisplays();
+        startOverlay.style.display = 'flex';
+      }, 40);
+    }
 
-// ── Loop ──────────────────────────────────────────────────────────────────────
-function loop(ts){
-  if(!running)return;
-  animId=requestAnimationFrame(loop);
-  const dt=Math.min((ts-lastFrame)/16,3);
-  fpsSmooth=fpsSmooth*0.92+(1000/Math.max(ts-lastFrame,1))*0.08;
-  lastFrame=ts;
-  doStep(dt);
-  simTime+=dt*0.05;
-  stepCount++;
-  render(); updateStats();
-  g('timeDisplay').textContent=simTime.toFixed(1);
-}
+    // ── Wire up header buttons ─────────────────────────────────────────────────
+    btnRun.addEventListener('click', handlePlayPause);
+    btnPPIcon.addEventListener('click', handlePlayPause);
+    btnStep.addEventListener('click', handleStep);
+    document.getElementById('btn-reset').addEventListener('click', handleReset);
+    document.getElementById('btn-overlay-run').addEventListener('click', handlePlay);
 
-// ── Controls ──────────────────────────────────────────────────────────────────
-function simPlay(){
-  if(running)return;
-  running=true; lastFrame=performance.now();
-  animId=requestAnimationFrame(loop); setStatus(true);
-}
-function simPause(){
-  running=false; if(animId)cancelAnimationFrame(animId);
-  setStatus(false); render();
-}
-function simStep(){
-  if(running)return;
-  doStep(1); simTime+=0.05; stepCount++;
-  render(); updateStats();
-  g('timeDisplay').textContent=simTime.toFixed(1);
-}
-function simReset(){
-  running=false; if(animId)cancelAnimationFrame(animId);
-  setStatus(false); initCells(); render();
-  g('timeDisplay').textContent='0.0';
-  g('statSteps').textContent='0';
-  g('statA').textContent='0.000';
-  g('statI').textContent='0.000';
-}
-function setStatus(on){
-  [g('statusDot'),g('statusDot2')].forEach(d=>{if(d)d.className='status-dot'+(on?' running':'');});
-  g('statusBadge').innerHTML=`<span class="status-dot${on?' running':''}"></span>${on?'Running':'Paused'}`;
-}
+    // ── Tabs ───────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
-initCells();
-render();
-</script>
+    // ── Build parameter sliders ────────────────────────────────────────────────
+    function buildParamRows() {
+      const groups = { reaction: [], diffusion: [], hill: [] };
+      PARAM_META.forEach(m => groups[m.group].push(m));
+
+      Object.entries(groups).forEach(([group, metas]) => {
+        const container = document.getElementById('params-' + group);
+        metas.forEach(m => {
+          const val = params[m.key];
+          const pct = ((val - m.min) / (m.max - m.min)) * 100;
+
+          const item = document.createElement('div');
+          item.className = 'param-item';
+          item.innerHTML = `
+        <div class="param-row">
+          <span class="param-sym">${m.sym}</span>
+          <span class="param-lbl">${m.label}</span>
+          <span class="param-val" id="val-${m.key}">${val.toFixed(m.dp)}</span>
+        </div>
+        <input type="range" class="slider" id="slider-${m.key}"
+          min="${m.min}" max="${m.max}" step="${m.step}" value="${val}"
+          style="--pct:${pct}%"/>
+      `;
+          container.appendChild(item);
+
+          const slider = item.querySelector('input');
+          const valSpan = item.querySelector('.param-val');
+
+          slider.addEventListener('input', () => {
+            const v = parseFloat(slider.value);
+            params[m.key] = v;
+            valSpan.textContent = v.toFixed(m.dp);
+            const p = ((v - m.min) / (m.max - m.min)) * 100;
+            slider.style.setProperty('--pct', p + '%');
+          });
+        });
+      });
+    }
+
+    // ── Populate static info ───────────────────────────────────────────────────
+    document.getElementById('info-dim').textContent = `${N} × ${N}`;
+    document.getElementById('info-cells').textContent = N * N;
+
+    // ── Boot ───────────────────────────────────────────────────────────────────
+    buildParamRows();
+    initGrid();
+    requestAnimationFrame(drawGrid);
+    updateDisplays();
+  </script>
 </body>
+
 </html>
