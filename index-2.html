@@ -124,6 +124,30 @@
       cursor: not-allowed;
     }
 
+    .view-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 10px;
+      height: 30px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+      cursor: pointer;
+      font-family: inherit;
+      margin-left: 6px;
+      transition: filter 0.12s, border-color 0.12s;
+    }
+    .view-toggle:hover {
+      filter: brightness(0.97);
+      border-color: #d1d5db;
+    }
+    .view-toggle.active-activator { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+    .view-toggle.active-inhibitor { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+
     .proj-input {
       font-size: 13px;
       color: #374151;
@@ -623,6 +647,9 @@
           </svg>
           <span class="time-badge-val" id="time-display">0.0</span>
         </div>
+        <button class="view-toggle active-activator" id="btn-view-toggle" title="Toggle between activator and inhibitor concentration">
+          <span id="view-toggle-label">Activator</span>
+        </button>
         <button class="icon-btn" id="btn-reset" title="Reset">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <polyline points="1 4 1 10 7 10" />
@@ -768,7 +795,7 @@
     // ── Constants ──────────────────────────────────────────────────────────────
     const N = 52;
     const HEX_SIZE = 6.8;
-    const DT = 0.15;
+    const DT = 0.04;
     const CLR_LOW = [59, 130, 246];   // blue
     const CLR_HIGH = [239, 68, 68];    // red
 
@@ -845,6 +872,7 @@
     let params = { ...DEFAULT_PARAMS };
     let running = false;
     let rafId = null;
+    let showInhibitor = false;  // false = color by activator, true = color by inhibitor
 
     // ── DOM refs ───────────────────────────────────────────────────────────────
     const canvas = document.getElementById('sim-canvas');
@@ -879,11 +907,11 @@
 
     // ── Draw ───────────────────────────────────────────────────────────────────
     function drawGrid() {
-      const a = bufsA[curBuf];
+      const values = showInhibitor ? bufsI[curBuf] : bufsA[curBuf];
       let mn = Infinity, mx = -Infinity;
       for (let k = 0; k < N * N; k++) {
-        if (a[k] < mn) mn = a[k];
-        if (a[k] > mx) mx = a[k];
+        if (values[k] < mn) mn = values[k];
+        if (values[k] > mx) mx = values[k];
       }
       const rng = mx - mn || 1;
       const s = HEX_SIZE - 0.55;
@@ -892,7 +920,7 @@
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
       for (let idx = 0; idx < N * N; idx++) {
-        ctx.fillStyle = hexColor((a[idx] - mn) / rng);
+        ctx.fillStyle = hexColor((values[idx] - mn) / rng);
         const cx = GRID_CX[idx], cy = GRID_CY[idx];
         ctx.beginPath();
         for (let k = 0; k < 6; k++) {
@@ -1016,6 +1044,21 @@
     btnStep.addEventListener('click', handleStep);
     document.getElementById('btn-reset').addEventListener('click', handleReset);
     document.getElementById('btn-overlay-run').addEventListener('click', handlePlay);
+
+    // ── View toggle (Activator vs Inhibitor) ────────────────────────────────────
+    const btnViewToggle = document.getElementById('btn-view-toggle');
+    const viewToggleLabel = document.getElementById('view-toggle-label');
+    function handleViewToggle() {
+      showInhibitor = !showInhibitor;
+      viewToggleLabel.textContent = showInhibitor ? 'Inhibitor' : 'Activator';
+      btnViewToggle.classList.toggle('active-activator', !showInhibitor);
+      btnViewToggle.classList.toggle('active-inhibitor', showInhibitor);
+      btnViewToggle.title = showInhibitor
+        ? 'Showing inhibitor concentration (click for activator)'
+        : 'Showing activator concentration (click for inhibitor)';
+      drawGrid();
+    }
+    btnViewToggle.addEventListener('click', handleViewToggle);
 
     // ── Tabs ───────────────────────────────────────────────────────────────────
     document.querySelectorAll('.tab-btn').forEach(btn => {
