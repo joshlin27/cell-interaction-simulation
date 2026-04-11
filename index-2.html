@@ -5,12 +5,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Turing Pattern Simulator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-    rel="stylesheet" />
   <style>
-    /* ── Reset & Base ───────────────────────────────────────────────────────── */
+    /* Align with Genetic Circuit Simulator (genecircuits/src/index.css + Ribbon) */
+    :root {
+      --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --accent: #3ca683;
+      --border-app: #ccc;
+      --border-subtle: #ddd;
+      --surface-left: #fcfcfc;
+      --surface-work: #f7f9fb;
+      --text-muted: #6b7280;
+    }
+
     *,
     *::before,
     *::after {
@@ -22,15 +29,16 @@
     html,
     body {
       height: 100%;
-      font-family: 'Inter', 'Helvetica Neue', -apple-system, system-ui, sans-serif;
-      font-size: 13px;
+      font-family: var(--font-ui);
+      font-size: 15px;
+      line-height: 1.45;
       color: #111;
       background: #fff;
       overflow: hidden;
     }
 
     ::-webkit-scrollbar {
-      width: 4px;
+      width: 6px;
     }
 
     ::-webkit-scrollbar-track {
@@ -38,11 +46,10 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #e5e7eb;
-      border-radius: 2px;
+      background: #ccc;
+      border-radius: 3px;
     }
 
-    /* ── Layout ─────────────────────────────────────────────────────────────── */
     #app {
       display: flex;
       flex-direction: column;
@@ -50,73 +57,97 @@
       overflow: hidden;
     }
 
-    /* ── Header ─────────────────────────────────────────────────────────────── */
+    /* Top ribbon — matches Ribbon Flex p="3" + border #ccc */
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 10px;
-      height: 50px;
+      padding: 12px 16px;
+      min-height: 56px;
       background: #fff;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-app);
       flex-shrink: 0;
-      gap: 8px;
+      gap: 12px;
     }
 
     .h-left {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 12px;
       flex: 0 0 auto;
+    }
+
+    .logo-home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      color: inherit;
+      text-decoration: none;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .logo-home:hover svg polygon[fill='none'] {
+      stroke: #2d8f6e;
+    }
+
+    .logo-home:focus-visible {
+      box-shadow: 0 0 0 2px rgba(60, 166, 131, 0.35);
     }
 
     .h-center {
       flex: 1;
       display: flex;
       justify-content: center;
-      padding: 0 12px;
+      padding: 0 16px;
+      min-width: 0;
     }
 
     .h-right {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
       flex: 0 0 auto;
     }
 
+    /* Text size="3" weight bold — app title */
     .app-title {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 700;
       color: #111;
-      letter-spacing: -0.3px;
-      margin-right: 3px;
+      letter-spacing: -0.02em;
       white-space: nowrap;
     }
 
     .h-icon-row {
       display: flex;
-      gap: 2px;
+      gap: 8px;
+      align-items: center;
     }
 
+    /* IconButton size="3" ~40px, outline gray */
     .icon-btn {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-subtle);
       border-radius: 6px;
       cursor: pointer;
-      color: #6b7280;
+      color: var(--text-muted);
       padding: 0;
       flex-shrink: 0;
-      transition: filter 0.12s;
+      transition: background 0.12s, border-color 0.12s;
     }
 
     .icon-btn:hover:not(:disabled) {
-      filter: brightness(0.94);
       background: #f9fafb;
+      border-color: #ccc;
     }
 
     .icon-btn:disabled {
@@ -124,110 +155,114 @@
       cursor: not-allowed;
     }
 
+    /* TextField.Root size="2" surface, centered */
     .proj-input {
-      font-size: 13px;
-      color: #374151;
-      background: transparent;
-      border: 1px solid #e5e7eb;
+      font-size: 15px;
+      color: #111;
+      background: #f9fafb;
+      border: 1px solid var(--border-subtle);
       border-radius: 6px;
-      padding: 5px 14px;
+      padding: 8px 14px;
       text-align: center;
       outline: none;
-      width: 200px;
+      width: 100%;
+      max-width: 400px;
       font-family: inherit;
       cursor: text;
       transition: border-color 0.12s, box-shadow 0.12s;
     }
 
     .proj-input:focus {
-      border-color: #3ca683;
+      border-color: var(--accent);
       box-shadow: 0 0 0 2px rgba(60, 166, 131, 0.12);
+      background: #fff;
     }
 
+    /* Button solid size="3" */
     .run-btn {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 0 16px;
-      height: 34px;
-      background: #3ca683;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 18px;
+      min-height: 40px;
+      background: var(--accent);
       color: #fff;
-      border: none;
-      border-radius: 7px;
-      font-size: 13px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
       font-family: inherit;
       white-space: nowrap;
-      margin-left: 4px;
-      letter-spacing: -0.1px;
       transition: filter 0.12s, box-shadow 0.12s;
-      box-shadow: 0 1px 3px rgba(60, 166, 131, 0.25);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
     }
 
     .run-btn:hover {
-      filter: brightness(1.07);
-      box-shadow: 0 2px 8px rgba(60, 166, 131, 0.35);
+      filter: brightness(1.05);
     }
 
     .run-btn:active {
-      filter: brightness(0.95);
+      filter: brightness(0.96);
     }
 
     .time-badge {
       display: flex;
       align-items: center;
-      gap: 5px;
-      padding: 0 10px;
-      height: 30px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+      gap: 8px;
+      padding: 0 12px;
+      min-height: 40px;
+      background: var(--surface-left);
+      border: 1px solid var(--border-subtle);
       border-radius: 6px;
-      margin-left: 2px;
     }
 
     .time-badge-val {
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 600;
       color: #111;
-      font-family: 'IBM Plex Mono', monospace;
-      min-width: 40px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      min-width: 44px;
     }
 
-    /* ── Body ───────────────────────────────────────────────────────────────── */
     .body {
       display: flex;
       flex: 1;
       overflow: hidden;
+      min-height: 0;
     }
 
-    /* ── Sidebar ────────────────────────────────────────────────────────────── */
+    /* Left pane — .left-pane in circuit app */
     aside {
-      width: 270px;
-      background: #fff;
-      border-right: 1px solid #e5e7eb;
+      flex: 0 0 30%;
+      min-width: 200px;
+      max-width: 400px;
+      background: var(--surface-left);
+      border-right: 1px solid var(--border-subtle);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      flex-shrink: 0;
     }
 
+    /* Radix Tabs.List style */
     .tabs {
       display: flex;
       border-bottom: 1px solid #e5e7eb;
       flex-shrink: 0;
-      padding: 0 4px;
+      background: var(--surface-left);
     }
 
     .tab-btn {
       position: relative;
       flex: 1;
-      padding: 11px 6px 9px;
+      padding: 12px 10px;
       background: none;
       border: none;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 500;
-      color: #6b7280;
+      color: var(--text-muted);
       cursor: pointer;
       font-family: inherit;
       text-align: center;
@@ -247,16 +282,17 @@
       content: '';
       position: absolute;
       bottom: -1px;
-      left: 8px;
-      right: 8px;
+      left: 10px;
+      right: 10px;
       height: 2px;
-      background: #3ca683;
+      background: var(--accent);
       border-radius: 2px;
     }
 
     .sidebar-scroll {
       flex: 1;
       overflow-y: auto;
+      min-height: 0;
     }
 
     .tab-panel {
@@ -267,117 +303,123 @@
       display: block;
     }
 
-    .section-head {
-      padding: 12px 16px 7px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #111;
-      border-bottom: 1px solid #f3f4f6;
+    .tab-panel.active > .section-head:first-of-type {
+      padding-top: 20px;
     }
 
-    /* ── Param rows ─────────────────────────────────────────────────────────── */
+    /* Toolbox-style section title (Text size="4" bold) */
+    .section-head {
+      padding: 14px 16px 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #111;
+      border-bottom: 1px solid #e5e7eb;
+      background: var(--surface-left);
+    }
+
     .param-item {
-      padding: 8px 16px 7px;
-      border-bottom: 1px solid #f9fafb;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid #eee;
+      background: var(--surface-left);
     }
 
     .param-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-bottom: 7px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
     .param-sym {
-      font-size: 12px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-family: var(--font-mono);
       font-weight: 500;
-      color: #3ca683;
-      min-width: 24px;
+      color: var(--accent);
+      min-width: 28px;
     }
 
     .param-lbl {
       flex: 1;
-      font-size: 12px;
-      color: #6b7280;
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
     }
 
     .param-val {
-      font-size: 12px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-family: var(--font-mono);
       font-weight: 600;
+      font-variant-numeric: tabular-nums;
       color: #111;
-      min-width: 36px;
+      min-width: 40px;
       text-align: right;
     }
 
-    /* ── Sliders ────────────────────────────────────────────────────────────── */
     input[type=range].slider {
       -webkit-appearance: none;
       width: 100%;
-      height: 3px;
-      border-radius: 2px;
+      height: 4px;
+      border-radius: 3px;
       outline: none;
       cursor: pointer;
       background: linear-gradient(to right,
-          #3ca683 var(--pct, 50%),
+          var(--accent) var(--pct, 50%),
           #e5e7eb var(--pct, 50%));
     }
 
     input[type=range].slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 13px;
-      height: 13px;
+      width: 16px;
+      height: 16px;
       background: #fff;
       border-radius: 50%;
-      border: 2px solid #3ca683;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+      border: 2px solid var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       cursor: pointer;
       transition: transform 0.1s;
     }
 
     input[type=range].slider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
+      transform: scale(1.08);
     }
 
     input[type=range].slider::-moz-range-thumb {
-      width: 13px;
-      height: 13px;
+      width: 16px;
+      height: 16px;
       background: #fff;
-      border: 2px solid #3ca683;
       border-radius: 50%;
+      border: 2px solid var(--accent);
       cursor: pointer;
-      border: none;
-      box-shadow: 0 0 0 2px #3ca683;
+      box-shadow: 0 0 0 1px var(--accent);
     }
 
-    /* ── Legend ─────────────────────────────────────────────────────────────── */
     .legend-wrap {
-      padding: 10px 16px 14px;
-      border-bottom: 1px solid #f3f4f6;
+      padding: 14px 16px 18px;
+      border-bottom: 1px solid #e5e7eb;
+      background: var(--surface-left);
     }
 
     .legend-bar {
-      height: 8px;
+      height: 10px;
       border-radius: 4px;
       background: linear-gradient(to right, #3b82f6, #ef4444);
-      border: 1px solid #e5e7eb;
+      border: 1px solid var(--border-subtle);
     }
 
     .legend-lbls {
       display: flex;
       justify-content: space-between;
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 4px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      font-family: var(--font-mono);
     }
 
     .legend-colors {
       display: flex;
       justify-content: space-between;
-      font-size: 11px;
-      margin-top: 7px;
+      font-size: 13px;
+      margin-top: 8px;
       font-weight: 600;
     }
 
@@ -389,134 +431,136 @@
       color: #ef4444;
     }
 
-    /* ── Equations ──────────────────────────────────────────────────────────── */
     .eq-card {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      padding: 8px 16px;
-      border-bottom: 1px solid #f9fafb;
+      gap: 4px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      background: var(--surface-left);
     }
 
     .eq-lbl {
-      font-size: 10px;
-      color: #9ca3af;
-      font-weight: 700;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
     }
 
     .eq-val {
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      line-height: 1.65;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      line-height: 1.55;
       word-break: break-word;
       color: #374151;
     }
 
     .eq-val.accent {
-      color: #3ca683;
-      font-weight: 500;
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .eq-val.dim {
-      color: #c5cad0;
+      color: #9ca3af;
     }
 
-    /* ── Info rows ──────────────────────────────────────────────────────────── */
     .info-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 16px;
-      border-bottom: 1px solid #f9fafb;
+      padding: 10px 16px;
+      border-bottom: 1px solid #eee;
+      background: var(--surface-left);
     }
 
     .info-lbl {
-      font-size: 12px;
-      color: #6b7280;
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
     }
 
     .info-val {
-      font-size: 12px;
-      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-family: var(--font-mono);
       font-weight: 600;
+      font-variant-numeric: tabular-nums;
       color: #111;
     }
 
     .info-val.accent {
-      color: #3ca683;
+      color: var(--accent);
     }
 
-    /* ── Canvas area ────────────────────────────────────────────────────────── */
+    /* .flow-wrapper background */
     main {
       flex: 1;
       position: relative;
       overflow: hidden;
-      background: #f3f4f6;
-      background-image: radial-gradient(circle, #c5cad2 1px, transparent 1px);
+      background: var(--surface-work);
+      background-image: radial-gradient(circle, #d1d5db 1px, transparent 1px);
       background-size: 20px 20px;
       display: flex;
       align-items: center;
       justify-content: center;
+      min-width: 0;
     }
 
     .canvas-wrap {
       position: relative;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border-subtle);
     }
 
     #sim-canvas {
       display: block;
       max-width: 100%;
-      max-height: calc(100vh - 52px);
+      max-height: calc(100vh - 64px);
     }
 
-    /* ── Start overlay ──────────────────────────────────────────────────────── */
     #start-overlay {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(6px);
+      background: rgba(247, 249, 251, 0.85);
+      backdrop-filter: blur(4px);
       z-index: 10;
     }
 
     .overlay-card {
       text-align: center;
-      padding: 32px 42px;
+      padding: 28px 36px;
       background: #fff;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     }
 
     .overlay-hex {
-      font-size: 42px;
-      color: #3ca683;
+      font-size: 40px;
+      color: var(--accent);
       line-height: 1;
       margin-bottom: 12px;
     }
 
     .overlay-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 700;
       color: #111;
-      margin-bottom: 6px;
-      letter-spacing: -0.3px;
+      margin-bottom: 8px;
     }
 
     .overlay-sub {
-      font-size: 12px;
-      color: #9ca3af;
-      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      font-weight: 500;
     }
 
-    /* ── Zoom panel ─────────────────────────────────────────────────────────── */
     .zoom-panel {
       position: absolute;
       bottom: 16px;
@@ -524,23 +568,23 @@
       display: flex;
       flex-direction: column;
       background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
       overflow: hidden;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
 
     .zoom-btn {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
       border: none;
       cursor: pointer;
-      color: #6b7280;
-      font-size: 16px;
+      color: var(--text-muted);
+      font-size: 18px;
       font-family: inherit;
       padding: 0;
       transition: background 0.1s;
@@ -552,7 +596,7 @@
 
     .zoom-divider {
       height: 1px;
-      background: #f3f4f6;
+      background: #e5e7eb;
     }
   </style>
 </head>
@@ -563,28 +607,29 @@
     <!-- ── Header ── -->
     <header>
       <div class="h-left">
-        <!-- Logo -->
-        <svg width="20" height="20" viewBox="0 0 28 28" style="flex-shrink:0">
-          <polygon points="14,2 24,7.5 24,20.5 14,26 4,20.5 4,7.5" fill="none" stroke="#3ca683" stroke-width="2.2" />
-          <polygon points="14,8 19.5,11.2 19.5,17.8 14,21 8.5,17.8 8.5,11.2" fill="#3ca683" opacity="0.25" />
-        </svg>
+        <a class="logo-home" href="/" title="Back to circuit builder" aria-label="Back to circuit builder">
+          <svg width="22" height="22" viewBox="0 0 28 28" aria-hidden="true">
+            <polygon points="14,2 24,7.5 24,20.5 14,26 4,20.5 4,7.5" fill="none" stroke="#3ca683" stroke-width="2.2" />
+            <polygon points="14,8 19.5,11.2 19.5,17.8 14,21 8.5,17.8 8.5,11.2" fill="#3ca683" opacity="0.25" />
+          </svg>
+        </a>
         <span class="app-title">Turing Pattern Simulator</span>
         <div class="h-icon-row">
           <button class="icon-btn" title="New">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
           </button>
           <button class="icon-btn" title="Save">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
               <polyline points="17 21 17 13 7 13 7 21" />
               <polyline points="7 3 7 8 15 8" />
             </svg>
           </button>
           <button class="icon-btn" title="Export">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
@@ -598,40 +643,39 @@
       </div>
 
       <div class="h-right">
-        <button class="icon-btn" id="btn-toggle-field" title="Show Inhibitor">A</button>
         <button class="icon-btn" id="btn-step" title="Step">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <polygon points="5 3 19 12 5 21 5 3" />
             <line x1="19" y1="3" x2="19" y2="21" />
           </svg>
         </button>
         <button class="icon-btn" id="btn-playpause-icon" title="Play">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
             id="pp-icon-svg">
             <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
           </svg>
         </button>
         <button class="run-btn" id="btn-run">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" id="run-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" id="run-icon">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
           <span id="run-label">Run Simulation</span>
         </button>
         <div class="time-badge">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#3ca683" stroke-width="2.5">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3ca683" stroke-width="2">
             <circle cx="12" cy="12" r="10" />
             <polyline points="12 6 12 12 16 14" />
           </svg>
           <span class="time-badge-val" id="time-display">0.0</span>
         </div>
         <button class="icon-btn" id="btn-reset" title="Reset">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <polyline points="1 4 1 10 7 10" />
             <path d="M3.51 15a9 9 0 102.13-9.36L1 10" />
           </svg>
         </button>
         <button class="icon-btn" title="Settings">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <circle cx="12" cy="12" r="3" />
             <path
               d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
@@ -665,10 +709,10 @@
             <div class="section-head">Hill Function</div>
             <div id="params-hill"></div>
 
-            <div class="section-head">Activator Scale</div>
+            <div class="section-head" id="legend-section-head">Total concentration (a + i)</div>
             <div class="legend-wrap">
               <div class="legend-bar"></div>
-              <div class="legend-lbls"><span id="legend-low">Low [a]</span><span id="legend-high">High [a]</span></div>
+              <div class="legend-lbls"><span id="legend-low">Low (a + i)</span><span id="legend-high">High (a + i)</span></div>
               <div class="legend-colors">
                 <span class="lc-blue">● Blue</span>
                 <span class="lc-red">● Red</span>
@@ -680,7 +724,7 @@
           <div class="tab-panel" id="tab-equations">
             <div class="section-head">Neighbourhood</div>
             <div class="eq-card"><span class="eq-lbl">Sum</span><span class="eq-val">S̄ = avg(aₙ)</span></div>
-            <div class="eq-card"><span class="eq-lbl">Hill</span><span class="eq-val accent">f(S̄, i) = S̄ⁿ / (Kⁿ + S̄ⁿ + iⁿ)</span></div>
+            <div class="eq-card"><span class="eq-lbl">Hill</span><span class="eq-val accent">f = A/(1+A+I), A=(S̄/K)^{n_a}, I=(i/K)^{n_i}</span></div>
             <div class="section-head">Dynamics</div>
             <div class="eq-card"><span class="eq-lbl">Activator</span><span class="eq-val">∂a/∂t = βa·f(S̄,i) − λa·a</span>
             </div>
@@ -696,7 +740,7 @@
             </div>
             <div class="info-row"><span class="info-lbl">Total Cells</span><span class="info-val"
                 id="info-cells"></span></div>
-            <div class="info-row"><span class="info-lbl">Time Step</span><span class="info-val">Δt = 0.02 × 6</span></div>
+            <div class="info-row"><span class="info-lbl">Time Step</span><span class="info-val">Δt = 0.01 × 8 / frame</span></div>
             <div class="info-row"><span class="info-lbl">Step Count</span><span class="info-val"
                 id="info-steps">0</span></div>
             <div class="info-row"><span class="info-lbl">Topology</span><span class="info-val">Hex lattice</span></div>
@@ -705,8 +749,8 @@
                 Paused</span></div>
             <div class="info-row"><span class="info-lbl">Time</span><span class="info-val" id="info-time">0.0</span>
             </div>
-            <div class="info-row"><span class="info-lbl">Display Field</span><span class="info-val"
-                id="info-field">Activator [a]</span></div>
+            <div class="info-row"><span class="info-lbl">Color scale</span><span class="info-val"
+                id="info-field">Total a + i</span></div>
           </div>
 
         </div>
@@ -724,7 +768,7 @@
               <div class="overlay-title">Ready to Simulate</div>
               <div class="overlay-sub">Small perturbations grow near a steady state</div>
               <button class="run-btn" id="btn-overlay-run" style="margin-left:0">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
                 Run Simulation
@@ -740,7 +784,7 @@
           <button class="zoom-btn" title="Zoom out">−</button>
           <div class="zoom-divider"></div>
           <button class="zoom-btn" title="Fit">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="15 3 21 3 21 9" />
               <polyline points="9 21 3 21 3 15" />
               <line x1="21" y1="3" x2="14" y2="10" />
@@ -749,7 +793,7 @@
           </button>
           <div class="zoom-divider"></div>
           <button class="zoom-btn" title="Lock">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
@@ -786,7 +830,8 @@
       { key: 'li', label: 'Inhibitor Degrade', sym: 'λi', min: 0.20, max: 3.00, step: 0.05, dp: 2, group: 'reaction' },
       { key: 'di', label: 'Inhibitor Diffusion', sym: 'Di', min: 0.00, max: 15.00, step: 0.10, dp: 2, group: 'diffusion' },
       { key: 'K', label: 'Signal Threshold', sym: 'K', min: 0.10, max: 3.00, step: 0.05, dp: 2, group: 'hill' },
-      { key: 'n', label: 'Hill Coefficient', sym: 'n', min: 1.00, max: 6.00, step: 0.25, dp: 2, group: 'hill' },
+      { key: 'nA', label: 'Hill (activator)', sym: 'n_a', min: 1.00, max: 6.00, step: 0.25, dp: 2, group: 'hill' },
+      { key: 'nI', label: 'Hill (inhibitor)', sym: 'n_i', min: 1.00, max: 6.00, step: 0.25, dp: 2, group: 'hill' },
     ];
 
     // Tuned starting point: local activation, stronger long-range inhibition.
@@ -797,7 +842,8 @@
       li: 1.00,
       di: 10.00,
       K: 1.00,
-      n: 3.00,
+      nA: 3.00,
+      nI: 3.00,
     };
 
     // ── Precomputed geometry ───────────────────────────────────────────────────
@@ -869,13 +915,12 @@
     let params = { ...DEFAULT_PARAMS };
     let running = false;
     let rafId = null;
-    let displayMode = 'activator';
     let steadyA = 0.5;
     let steadyI = 0.5;
 
+    const sumField = new Float32Array(N * N);
     const displayScale = {
-      activator: { lo: NaN, hi: NaN },
-      inhibitor: { lo: NaN, hi: NaN }
+      combined: { lo: NaN, hi: NaN }
     };
 
     // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -887,15 +932,12 @@
     const infoTime = document.getElementById('info-time');
     const infoField = document.getElementById('info-field');
     const startOverlay = document.getElementById('start-overlay');
-    const btnToggleField = document.getElementById('btn-toggle-field');
     const btnStep = document.getElementById('btn-step');
     const btnRun = document.getElementById('btn-run');
     const runLabel = document.getElementById('run-label');
     const runIcon = document.getElementById('run-icon');
     const btnPPIcon = document.getElementById('btn-playpause-icon');
     const ppIconSvg = document.getElementById('pp-icon-svg');
-    const legendLow = document.getElementById('legend-low');
-    const legendHigh = document.getElementById('legend-high');
 
     canvas.width = CANVAS_W;
     canvas.height = CANVAS_H;
@@ -906,14 +948,15 @@
     // the activator and inhibitor actually coupled, unlike the original toy form.
     //
     // signal = average(neighbor activator)
-    // f(signal, i) = signal^n / (K^n + signal^n + i^n)
+    // A = (S̄/K)^{n_a}, I = (i/K)^{n_i}, f = A / (1 + A + I)
     // da/dt = βa f - λa a
     // di/dt = βi f - λi i + Di(avg(i_n) - i)
     function hillResponse(signal, inhibitor) {
       const K = Math.max(params.K, EPS);
-      const n = params.n;
-      const actTerm = Math.pow(Math.max(signal, 0) / K, n);
-      const inhTerm = Math.pow(Math.max(inhibitor, 0) / K, n);
+      const nA = params.nA;
+      const nI = params.nI;
+      const actTerm = Math.pow(Math.max(signal, 0) / K, nA);
+      const inhTerm = Math.pow(Math.max(inhibitor, 0) / K, nI);
       return actTerm / (1 + actTerm + inhTerm);
     }
 
@@ -984,10 +1027,8 @@
       curBuf = 0;
       simTime = 0;
       stepCount = 0;
-      displayScale.activator.lo = NaN;
-      displayScale.activator.hi = NaN;
-      displayScale.inhibitor.lo = NaN;
-      displayScale.inhibitor.hi = NaN;
+      displayScale.combined.lo = NaN;
+      displayScale.combined.hi = NaN;
     }
 
     function getRobustRange(field, key) {
@@ -1017,9 +1058,11 @@
 
     // ── Draw ───────────────────────────────────────────────────────────────────
     function drawGrid() {
-      const showingActivator = displayMode === 'activator';
-      const field = showingActivator ? bufsA[curBuf] : bufsI[curBuf];
-      const scale = getRobustRange(field, showingActivator ? 'activator' : 'inhibitor');
+      const a = bufsA[curBuf], iv = bufsI[curBuf];
+      for (let idx = 0; idx < N * N; idx++) {
+        sumField[idx] = a[idx] + iv[idx];
+      }
+      const scale = getRobustRange(sumField, 'combined');
       const rng = scale.hi - scale.lo;
       const s = HEX_SIZE - 0.55;
 
@@ -1027,7 +1070,7 @@
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
       for (let idx = 0; idx < N * N; idx++) {
-        ctx.fillStyle = hexColor((field[idx] - scale.lo) / rng);
+        ctx.fillStyle = hexColor((sumField[idx] - scale.lo) / rng);
         const cx = GRID_CX[idx], cy = GRID_CY[idx];
         ctx.beginPath();
         for (let k = 0; k < 6; k++) {
@@ -1095,15 +1138,7 @@
       infoSteps.textContent = stepCount;
       infoState.textContent = running ? '▶ Running' : '⏸ Paused';
       infoState.classList.toggle('accent', running);
-      infoField.textContent = displayMode === 'activator' ? 'Activator [a]' : 'Inhibitor [i]';
-    }
-
-    function updateFieldToggleUI() {
-      const showingActivator = displayMode === 'activator';
-      btnToggleField.textContent = showingActivator ? 'A' : 'I';
-      btnToggleField.title = showingActivator ? 'Show Inhibitor' : 'Show Activator';
-      legendLow.textContent = showingActivator ? 'Low [a]' : 'Low [i]';
-      legendHigh.textContent = showingActivator ? 'High [a]' : 'High [i]';
+      infoField.textContent = 'Total a + i';
     }
 
     function setRunningState(val) {
@@ -1161,17 +1196,9 @@
       }, 40);
     }
 
-    function handleToggleField() {
-      displayMode = displayMode === 'activator' ? 'inhibitor' : 'activator';
-      updateFieldToggleUI();
-      drawGrid();
-      updateDisplays();
-    }
-
     btnRun.addEventListener('click', handlePlayPause);
     btnPPIcon.addEventListener('click', handlePlayPause);
     btnStep.addEventListener('click', handleStep);
-    btnToggleField.addEventListener('click', handleToggleField);
     document.getElementById('btn-reset').addEventListener('click', handleReset);
     document.getElementById('btn-overlay-run').addEventListener('click', handlePlay);
 
@@ -1226,7 +1253,6 @@
 
     buildParamRows();
     initGrid();
-    updateFieldToggleUI();
     requestAnimationFrame(drawGrid);
     updateDisplays();
   </script>
